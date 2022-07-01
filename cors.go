@@ -53,6 +53,9 @@ type Config struct {
 
 	// Allows usage of file:// schema (dangerous!) use it only when you 100% sure it's needed
 	AllowFiles bool
+
+	// Allows protocol not same. if true ,for example allow http and https; if false, for example not allow http and https
+	AllowProtocolNotSame bool
 }
 
 // AddAllowMethods is allowed to add custom methods
@@ -145,10 +148,11 @@ func (c Config) parseWildcardRules() [][]string {
 // DefaultConfig returns a generic default configuration mapped to localhost.
 func DefaultConfig() Config {
 	return Config{
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
-		AllowCredentials: false,
-		MaxAge:           12 * time.Hour,
+		AllowMethods:         []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:         []string{"Origin", "Content-Length", "Content-Type"},
+		AllowCredentials:     false,
+		AllowProtocolNotSame: false,
+		MaxAge:               12 * time.Hour,
 	}
 }
 

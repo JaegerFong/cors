@@ -8,13 +8,14 @@ import (
 )
 
 type cors struct {
-	allowAllOrigins  bool
-	allowCredentials bool
-	allowOriginFunc  func(string) bool
-	allowOrigins     []string
-	normalHeaders    http.Header
-	preflightHeaders http.Header
-	wildcardOrigins  [][]string
+	allowAllOrigins      bool
+	allowCredentials     bool
+	allowProtocolNotSame bool
+	allowOriginFunc      func(string) bool
+	allowOrigins         []string
+	normalHeaders        http.Header
+	preflightHeaders     http.Header
+	wildcardOrigins      [][]string
 }
 
 var (
@@ -49,13 +50,14 @@ func newCors(config Config) *cors {
 	}
 
 	return &cors{
-		allowOriginFunc:  config.AllowOriginFunc,
-		allowAllOrigins:  config.AllowAllOrigins,
-		allowCredentials: config.AllowCredentials,
-		allowOrigins:     normalize(config.AllowOrigins),
-		normalHeaders:    generateNormalHeaders(config),
-		preflightHeaders: generatePreflightHeaders(config),
-		wildcardOrigins:  config.parseWildcardRules(),
+		allowOriginFunc:      config.AllowOriginFunc,
+		allowAllOrigins:      config.AllowAllOrigins,
+		allowProtocolNotSame: config.AllowProtocolNotSame,
+		allowCredentials:     config.AllowCredentials,
+		allowOrigins:         normalize(config.AllowOrigins),
+		normalHeaders:        generateNormalHeaders(config),
+		preflightHeaders:     generatePreflightHeaders(config),
+		wildcardOrigins:      config.parseWildcardRules(),
 	}
 }
 
@@ -67,10 +69,12 @@ func (cors *cors) applyCors(c *gin.Context) {
 	}
 	host := c.Request.Host
 
-	if origin == "http://"+host || origin == "https://"+host {
-		// request is not a CORS request but have origin header.
-		// for example, use fetch api
-		return
+	if cors.allowProtocolNotSame {
+		if origin == "http://"+host || origin == "https://"+host {
+			// request is not a CORS request but have origin header.
+			// for example, use fetch api
+			return
+		}
 	}
 
 	if !cors.validateOrigin(origin) {
